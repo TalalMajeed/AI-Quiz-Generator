@@ -1,15 +1,28 @@
+import { createRouter, createWebHistory } from 'vue-router'
 
-/**
- * router/index.ts
- *
- * Automatic routes for `./src/pages/*.vue`
- */
+import Index from '../pages/index.vue'
+import Welcome from '../pages/welcome.vue'
 
-// Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
+const routes = [
+  {
+    path: '/',
+    name: 'Index',
+    component: Index
+  },
+  {
+    path: '/welcome',
+    name: 'Welcome',
+    component: Welcome
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/welcome'
+  }
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
+  routes
 })
 
-export default router
+export default router;

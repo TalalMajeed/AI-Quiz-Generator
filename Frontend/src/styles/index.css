@@ -1,0 +1,33 @@
+:root, body {
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    --primary: #7734eb;
+    --primary-light: #d8c2ff;
+    --primary-dark: #632bc4;
+    --gradient-color: radial-gradient(circle, rgba(240,232,255,1) 0%, rgba(190,152,255,1) 100%);
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c5c5c5; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e; 
+}
