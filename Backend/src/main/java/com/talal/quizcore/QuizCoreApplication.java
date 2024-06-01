@@ -34,7 +34,6 @@ public class QuizCoreApplication {
 
     @GetMapping("/")
     public String hello() {
-        String x = "The Server is Running!";
         return "<h1>Welcome to QuizCore API</h1><p>Powered by SpringBoot Java!</p><p>© Muhammad Talal Majeed</p>";
     }
 
