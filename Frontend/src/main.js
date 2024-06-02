@@ -11,6 +11,8 @@ import '@/styles/index.css'
 // Components
 import App from './App.vue'
 
+export const API = 'http://localhost:8080'
+
 // Composables
 import { createApp } from 'vue'
 

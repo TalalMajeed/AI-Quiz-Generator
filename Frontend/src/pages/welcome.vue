@@ -19,7 +19,7 @@
 import router from "./../router/index";
 
 function login() {
-    //router.push("/login");
+    router.push("/login");
 }
 </script>
 
