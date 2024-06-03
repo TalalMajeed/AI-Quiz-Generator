@@ -1,27 +1,30 @@
 package com.talal.quizcore;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 
 @Entity
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     private String name;
     private String email;
     private String password;
     private String education;
     private String community;
 
-    // Constructors, getters, and setters
     public Student() {
     }
 
-    public Student(long id, String name, String email, String password, String education, String community) {
+    public Student(String  id, String name, String email, String password, String education, String community) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -30,11 +33,12 @@ public class Student {
         this.community = community;
     }
 
-    public Long getId() {
+    // Getters and setters
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -70,23 +74,30 @@ public class Student {
         this.education = education;
     }
 
-    public String getcommunity() {
+    public String getCommunity() {
         return community;
     }
 
-    public void setcommunity() {
+    public void setCommunity(String community) {
         this.community = community;
     }
 
-    @Override
-    public String toString() {
-        return "Student{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", education='" + education + '\'' +
-                ", community='" + community + '\'';
+    public String toJson(JwtUtil jwtUtil) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectNode studentJson = mapper.createObjectNode();
+        studentJson.putPOJO("student", this);
+        studentJson.put("status", 200);
+        studentJson.put("message", "User found");
+
+        String token = jwtUtil.generateToken(this.getId());
+        studentJson.put("token", token);
+
+        try {
+            return mapper.writeValueAsString(studentJson);
+        } catch (JsonProcessingException e) {
+            return "{\"status\": 500, \"message\": \"JSON Serialization error: " + e.getMessage() + "\"}";
+        }
     }
 
     public static String generateID() {

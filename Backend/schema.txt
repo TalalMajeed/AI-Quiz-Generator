@@ -1,0 +1,21 @@
+DROP DATABASE IF EXISTS quizcore;
+
+CREATE DATABASE quizcore;
+USE quizcore;
+
+CREATE TABLE student(
+id CHAR(5) PRIMARY KEY,
+name VARCHAR(100),
+email VARCHAR(100),
+password VARCHAR(100),
+education VARCHAR(100),
+community VARCHAR(1)
+);
+
+CREATE TABLE quiz(
+id CHAR(5) PRIMARY KEY,
+name VARCHAR(100),
+password VARCHAR(100),
+review BOOLEAN,
+data BLOB
+)

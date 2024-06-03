@@ -16,7 +16,6 @@ public class MCQGenerator {
         JSONObject actualGPTResponse = getGPTResponse(systemPrompt, userPrompt);
 
         if (!actualGPTResponse.has("MCQs")) {
-            System.out.println("SUYA");
             JSONObject errorResponse = new JSONObject();
             errorResponse.put("status", 400);
             errorResponse.put("error", "invalid prompt");
@@ -75,7 +74,7 @@ public class MCQGenerator {
             post.setEntity(new StringEntity(body.toString()));
 
             String response = EntityUtils.toString(client.execute(post).getEntity());
-            System.out.println("GPT Response: " + response); // Log the response
+            System.out.println("GPT Response: " + response);
 
             JSONObject jsonResponse = new JSONObject(response);
             JSONArray choices = jsonResponse.getJSONArray("choices");
@@ -96,10 +95,10 @@ public class MCQGenerator {
                 throw new RuntimeException("No choices in GPT response");
             }
         } catch (IOException e) {
-            e.printStackTrace(); // Print stack trace to help with debugging
+            e.printStackTrace();
             throw new RuntimeException("Error in GPT call: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace(); // Catch any other exceptions
+            e.printStackTrace();
             throw new RuntimeException("Unexpected error: " + e.getMessage());
         }
     }

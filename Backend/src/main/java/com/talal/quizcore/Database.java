@@ -17,8 +17,11 @@ public class Database {
 
     private JdbcTemplate db;
 
+    private JwtUtil jwtUtil;
+
     @Autowired
     public Database(JdbcTemplate db) {
+        jwtUtil = new JwtUtil();
         try {
             this.db = db;
             System.out.println("Database Connected successfully!");
@@ -32,27 +35,53 @@ public class Database {
     public void initializeDatabase() {
     }
 
-    public String getSQLUser(String email, String password) {
+    public String getSQLStudent(String email, String password) {
         String SQLTest = "SELECT * FROM student WHERE email = ? AND password = ?";
         try {
-            List<Map<String, Object>> results = db.query(SQLTest, new Object[]{email, password}, new RowMapper<Map<String, Object>>() {
+            List<Student> students = db.query(SQLTest, new Object[]{email, password}, new RowMapper<>() {
                 @Override
-                public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("id", rs.getString("id"));
-                    result.put("name", rs.getString("name"));
-                    result.put("email", rs.getString("email"));
-                    result.put("education", rs.getString("education"));
-                    result.put("community", rs.getString("community"));
-                    return result;
+                public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Student student = new Student();
+                    student.setId(rs.getString("id"));
+                    student.setName(rs.getString("name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setEducation(rs.getString("education"));
+                    student.setCommunity(rs.getString("community"));
+                    return student;
                 }
             });
 
-            if (!results.isEmpty()) {
-                Map<String, Object> result = results.get(0);
-                return "{\"status\": 200, \"message\": \"User Found\", \"id\": \"" + result.get("id") +  "\", \"username\": \"" + result.get("name") + "\", \"email\": \"" + result.get("email") + "\", \"education\": \"" + result.get("education") + "\", \"community\": \"" + result.get("community") + "\"}";
+            if (!students.isEmpty()) {
+                return students.get(0).toJson(jwtUtil);
             } else {
-                return "{\"status\": 400, \"message\": \"User not found\"}";
+                return "{\"status\": 400, \"message\": \"Student not found\"}";
+            }
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String checkSQLStudent(String email, String id) {
+        String SQLTest = "SELECT * FROM student WHERE email = ? AND id = ?";
+        try {
+            List<Student> students = db.query(SQLTest, new Object[]{email, id}, new RowMapper<>() {
+                @Override
+                public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Student student = new Student();
+                    student.setId(rs.getString("id"));
+                    student.setName(rs.getString("name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setEducation(rs.getString("education"));
+                    student.setCommunity(rs.getString("community"));
+                    return student;
+                }
+            });
+
+            if (!students.isEmpty()) {
+                String token = jwtUtil.generateToken(id);
+                return "{\"status\": 200, \"message\": \"Student found\", \"token\": \"" + token + "\"}";
+            } else {
+                return "{\"status\": 400, \"message\": \"Student not found\"}";
             }
         } catch (Exception e) {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";

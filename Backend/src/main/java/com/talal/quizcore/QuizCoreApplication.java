@@ -45,17 +45,29 @@ public class QuizCoreApplication {
     }
 
     @PostMapping("/check/login")
-    public String registerUser(@RequestBody String raw) {
+    public String loginStudent(@RequestBody String raw) {
         try {
             JSONObject data = new JSONObject(raw);
             String password = data.getString("password");
             String email = data.getString("email");
-            return database.getSQLUser(email, password);
+            return database.getSQLStudent(email, password);
         }
         catch (Exception e) {
             return "{status: 500, message: \"Error: " + e + "\"}";
         }
+    }
 
+    @PostMapping("/check/user")
+    public String checkUser(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            String email = data.getString("email");
+            return database.checkSQLStudent(email, id);
+        }
+        catch (Exception e) {
+            return "{status: 500, message: \"Error: " + e + "\"}";
+        }
     }
 
     @PostConstruct

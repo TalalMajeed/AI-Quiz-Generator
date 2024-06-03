@@ -1,3 +1,4 @@
 V.1.0 - Project Initialization
 V.1.1 - Welcome Page & Color Scheme Initialized
 V.2.0 - Added the MCQ Generation API
+V.3.0 - Added the Student Login API
