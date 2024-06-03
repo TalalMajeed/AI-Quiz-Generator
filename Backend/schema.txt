@@ -9,7 +9,8 @@ name VARCHAR(100),
 email VARCHAR(100),
 password VARCHAR(100),
 education VARCHAR(100),
-community VARCHAR(1)
+community VARCHAR(1),
+photo BLOB
 );
 
 CREATE TABLE quiz(
@@ -17,5 +18,17 @@ id CHAR(5) PRIMARY KEY,
 name VARCHAR(100),
 password VARCHAR(100),
 review BOOLEAN,
-data BLOB
-)
+data BLOB,
+duration INT,
+creator CHAR(5),
+FOREIGN KEY (creator) REFERENCES student(id)
+);
+
+CREATE TABLE attempt(
+studentid CHAR(5),
+quizid CHAR(5),
+page INT,
+data BLOB,
+FOREIGN KEY (studentid) REFERENCES student(id),
+FOREIGN KEY (quizid) REFERENCES quiz(id)
+);

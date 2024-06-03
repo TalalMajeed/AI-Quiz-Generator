@@ -90,18 +90,20 @@ public class Database {
     }
 
     public String getSQLQuiz(String id) {
-        String SQLTest = "SELECT * FROM quiz WHERE id = ?";
+        String SQLTest = "SELECT q.id, q.name, q.password, q.review, q.data, s.name, q.duration FROM quiz q JOIN student s ON q.creator = s.id WHERE q.id = ?";
         try {
             List<Quiz> quizzes = db.query(SQLTest, new Object[]{id}, new RowMapper<>() {
                 @Override
                 public Quiz mapRow(ResultSet rs, int rowNum) throws SQLException {
                     Quiz quiz = new Quiz();
-                    quiz.setId(rs.getString("id"));
-                    quiz.setName(rs.getString("name"));
-                    quiz.setPassword(rs.getString("password"));
-                    quiz.setReview(rs.getInt("review"));
+                    quiz.setId(rs.getString("q.id"));
+                    quiz.setName(rs.getString("q.name"));
+                    quiz.setPassword(rs.getString("q.password"));
+                    quiz.setReview(rs.getInt("q.review"));
+                    quiz.setCreator(rs.getString("s.name"));
+                    quiz.setDuration(rs.getInt("q.duration"));
 
-                    Blob blob = rs.getBlob("data");
+                    Blob blob = rs.getBlob("q.data");
                     if (blob != null) {
                         byte[] blobBytes = blob.getBytes(1, (int) blob.length());
                         String blobText = new String(blobBytes);

@@ -3,3 +3,4 @@ V.1.1 - Welcome Page & Color Scheme Initialized
 V.2.0 - Added the MCQ Generation API
 V.3.0 - Added the Student Login API
 V.4.0 - Initialized Panel & Added JWT Auth
+V.5.0 - Initialized the Quiz API & Quiz Frontend Routing

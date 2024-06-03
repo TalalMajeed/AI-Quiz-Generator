@@ -17,20 +17,42 @@ public class Quiz {
     private String name;
     private String password;
     private int review;
+
+    private int duration;
     private String data;
 
-    public Quiz(String id, String name, String password, int review, String data) {
+    private String creator;
+
+    public Quiz(String id, String name, String password, int review, String data, String creator, int duration) {
         this.id = id;
         this.name = name;
         this.password = password;
         this.review = review;
         this.data = data;
+        this.creator = creator;
+        this.duration = duration;
     }
 
-public Quiz() {
-    }
+public Quiz() {}
 
     // Getters and setters
+
+    public String getCreator() {
+        return creator;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
     public String getId() {
         return id;
     }
