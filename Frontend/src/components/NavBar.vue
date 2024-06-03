@@ -1,6 +1,6 @@
 <template>
     <v-app-bar class="container" :elevation="2">
-        <template v-slot:prepend>
+        <template v-slot:prepend v-if="props.button">
             <v-app-bar-nav-icon style="margin-left: 4px;" @click="shift"></v-app-bar-nav-icon>
         </template>
         <v-app-bar-title>QuizCore</v-app-bar-title>
@@ -25,7 +25,7 @@ import { defineEmits, defineProps, onMounted, watch } from "vue";
 import router from "../router";
 import { SETSTUDENT, SETTOKEN } from "../main";
 
-const props = defineProps({ setPage: Function, user: Array });
+const props = defineProps({ setPage: Function, user: Array, button: Boolean});
 const emit = defineEmits(["trigger"]);
 
 function shift() {
@@ -36,8 +36,14 @@ watch(() => props.user, () => {
     console.log(props.user);
 });
 
-const items = [
-    { title: "Dashboard", onClick: () => props.setPage(0), icon: "mdi-view-dashboard" },
+
+
+let items = [];
+
+onMounted(()=>{
+    if(props.button) {
+        items = [
+        { title: "Dashboard", onClick: () => props.setPage(0), icon: "mdi-view-dashboard" },
     {
         title: "Sign Out", onClick: () => {
             SETTOKEN(null);
@@ -45,7 +51,24 @@ const items = [
             router.push("/login");
         }, icon: "mdi-logout",
     }
-];
+    ]
+    }
+    else {
+        items = [
+        { title: "Submit", onClick: () => {}, icon: "mdi-share" },
+    {
+        title: "Sign Out", onClick: () => {
+            SETTOKEN(null);
+            SETSTUDENT(null);
+            router.push("/login");
+        }, icon: "mdi-logout",
+    }
+    ]
+    }
+
+})
+
+
 </script>
 
 <style scoped>

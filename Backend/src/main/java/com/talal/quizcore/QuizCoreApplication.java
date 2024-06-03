@@ -70,6 +70,18 @@ public class QuizCoreApplication {
         }
     }
 
+    @PostMapping("/get/quiz")
+    public String getQuiz(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            return database.getSQLQuiz(id);
+        }
+        catch (Exception e) {
+            return "{status: 500, message: \"Error: " + e + "\"}";
+        }
+    }
+
     @PostConstruct
     public void init() {
         database.initializeDatabase();

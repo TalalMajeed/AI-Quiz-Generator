@@ -13,6 +13,12 @@ import App from './App.vue'
 
 export const API = 'http://localhost:8080'
 
+export let CURRENT = null;
+
+export const SETCURRENT = (current) => {
+    CURRENT = current;
+}
+
 function setCookie(cookieName, cookieValue) {
     document.cookie = cookieName + "=" + cookieValue + ";path=/";
 }
@@ -39,7 +45,13 @@ export const SETSTUDENT = (user) => {
 }
 
 export const GETSTUDENT = () => {
-    return JSON.parse(getCookie('student'));
+    try {
+        return JSON.parse(getCookie('student'));
+    }
+    catch (e) {
+        return null;
+    }
+
 }
 
 export const SETTOKEN = (token) => {
@@ -47,12 +59,19 @@ export const SETTOKEN = (token) => {
 }
 
 export const GETTOKEN = () => {
-    return JSON.parse(getCookie('token'));
+    try {
+        return JSON.parse(getCookie('token'));
+    }
+    catch (e) {
+        return null;
+    }
+
 }
 
 
 // Composables
 import { createApp } from 'vue'
+import { ca } from 'vuetify/locale';
 
 const app = createApp(App)
 

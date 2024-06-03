@@ -144,6 +144,7 @@ def getSystemPrompt():
 def generateMCQs(amount, grade, subject, details):
     global MCQs
 
+    print("Generating...")
     MCQs = []
 
     # First we will get the user prompt from the frontend
@@ -169,4 +170,5 @@ def generateMCQs(amount, grade, subject, details):
 
 # In production we will make sure that we can only call one function from this python file and that this file cannot be executed on its own
 if __name__ == "__main__":
-    print(generateMCQs(20, 16, "Computer Science", "Related to Fundamentals of Python, NumPY, Flask and Asynchronous Programming"))
+    x = generateMCQs(20, 16, "Computer Science", "Related to Fundamentals of Python, NumPY, Flask and Asynchronous Programming")
+    print(json.dumps(x))

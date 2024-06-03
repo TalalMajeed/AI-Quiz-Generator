@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -82,6 +83,38 @@ public class Database {
                 return "{\"status\": 200, \"message\": \"Student found\", \"token\": \"" + token + "\"}";
             } else {
                 return "{\"status\": 400, \"message\": \"Student not found\"}";
+            }
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String getSQLQuiz(String id) {
+        String SQLTest = "SELECT * FROM quiz WHERE id = ?";
+        try {
+            List<Quiz> quizzes = db.query(SQLTest, new Object[]{id}, new RowMapper<>() {
+                @Override
+                public Quiz mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Quiz quiz = new Quiz();
+                    quiz.setId(rs.getString("id"));
+                    quiz.setName(rs.getString("name"));
+                    quiz.setPassword(rs.getString("password"));
+                    quiz.setReview(rs.getInt("review"));
+
+                    Blob blob = rs.getBlob("data");
+                    if (blob != null) {
+                        byte[] blobBytes = blob.getBytes(1, (int) blob.length());
+                        String blobText = new String(blobBytes);
+                        quiz.setData(blobText);
+                    }
+                    return quiz;
+                }
+            });
+
+            if (!quizzes.isEmpty()) {
+                return quizzes.get(0).toJson();
+            } else {
+                return "{\"status\": 400, \"message\": \"Quiz not found\"}";
             }
         } catch (Exception e) {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";

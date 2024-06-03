@@ -1,6 +1,6 @@
 <template>
     <div v-show="auth">
-        <NavBar @trigger="setOpenMenu" :setPage="setPage" :user="user" />
+        <NavBar :button="true" @trigger="setOpenMenu" :setPage="setPage" :user="user" />
         <div class="main" v-if="user">
             <div class="left" :style="shiftWidth()">
                 <LeftBar @trigger="setPage" :page="currentPage" />
@@ -16,7 +16,7 @@
 </template>
 <script setup>
 import { ref, watch, defineProps, onMounted } from 'vue';
-import { GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
+import { SETCURRENT, GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
 import router from '../router';
 
 const currentPage = ref(0);
@@ -26,6 +26,7 @@ const openMenu = ref(true);
 
 
 onMounted(() => {
+    SETCURRENT('/panel');
     if(!GETSTUDENT()) router.push('/login');
     if(!GETTOKEN()) router.push('/login');
     authenticate();
@@ -69,7 +70,6 @@ async function authenticate() {
 
 const setPage = (p) => {
     currentPage.value = p;
-    console.log(currentPage.value);
 }
 
 const setOpenMenu = () => {

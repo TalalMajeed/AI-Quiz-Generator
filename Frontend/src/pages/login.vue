@@ -30,7 +30,7 @@
 <script setup>
 import router from "./../router/index";
 import { ref } from "vue";
-import { API, SETTOKEN, SETSTUDENT } from "./../main";
+import { API, SETTOKEN, SETSTUDENT, CURRENT } from "./../main";
 
 const showPassword = ref(false);
 const emailInput = ref(null);
@@ -80,7 +80,13 @@ function login() {
                 console.log(data.token)
                 SETTOKEN(data.token);
                 SETSTUDENT(data.student);
-                router.push("/panel");
+                if(CURRENT) {
+                    router.push(CURRENT);
+                }
+                else {
+                    router.push("/panel");
+                }
+
             } else {
                 error.value = true;
             }
