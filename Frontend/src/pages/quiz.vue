@@ -21,8 +21,8 @@
             </v-card>
             <v-card class="card" v-if="found">
                 <div class="card-heading">Start Attempt</div>
-                <v-responsive class="input">
-                    <v-text-field   v-text-field v-model="passwordInput" label="Quiz Password" type="password" variant="outlined"></v-text-field>
+                <v-responsive class="input" v-if="password.length != 0">
+                    <v-text-field v-text-field v-model="passwordInput" label="Quiz Password" type="password" variant="outlined"></v-text-field>
                 </v-responsive>
                 <div class="button-holder">
                     <v-btn class="button2">Start</v-btn>
@@ -39,6 +39,44 @@
             <br>
         </div>
         <div v-if="phase == 1">
+            <v-card class="card" v-if="found">
+                <div class="card-heading"><b>{{ name }}</b></div>
+                <div class="stat-info"><b>Full Name: </b>{{ attemptUser.name }}</div>
+                <div class="stat-info"><b>Attempted: </b>{{ attempted }} of {{total}}</div>
+                <div class="stat-info"><b>Time Left: </b>0</div>
+            </v-card>
+            <v-card class="card" v-if="found">
+                <div class="card-heading" :style="color"><b>Question {{ mindex + 1 }} of {{total}}</b></div>
+                <div class="stat-info">{{mcq["Q"]}}</div>
+            </v-card>
+            <v-card class="card" v-if="found">
+                <v-radio-group v-model="selection">
+                <div class="radio-group" @click="selection = '0'">
+                    <v-radio class="radio" value="0"></v-radio>
+                    <div class="radio-div">{{ mcq["O"][0] }}</div>
+                </div>
+                <div class="radio-group" @click="selection = '1'">
+                    <v-radio class="radio" value="1"></v-radio>
+                    <div class="radio-div">{{ mcq["O"][1] }}</div>
+                </div>
+                <div class="radio-group" @click="selection = '2'">
+                    <v-radio class="radio" value="2"></v-radio>
+                    <div class="radio-div">{{ mcq["O"][2] }}</div>
+                </div>
+                <div class="radio-group" @click="selection = '3'">
+                    <v-radio class="radio" value="3"></v-radio>
+                    <div class="radio-div">{{ mcq["O"][3] }}</div>
+                </div>
+                </v-radio-group>
+            </v-card>
+            <v-card class="card" v-if="found">
+                <div class="button-holder">
+                    <v-btn class="button2" @click="previous">Previous</v-btn>
+                    <v-btn class="button2" @click="next">Next</v-btn>
+                    <v-btn class="button2" @click="save">Save</v-btn>
+                    <v-btn class="button2">Submit</v-btn>
+                </div>
+            </v-card>
         </div>
         <div v-if="phase == 2">
         </div>
@@ -56,13 +94,14 @@ const route = useRoute();
 const auth = ref(true);
 const user = ref("");
 
-const data = ref(null);
+const phase = ref(1);
+
+const quizdata = ref([]);
 const creator = ref("");
 const total = ref(0);
 const name = ref("");
 const password = ref("");
 const review = ref("");
-const phase = ref(0);
 const duration = ref(0);
 const found = ref(false);
 const loading = ref(false);
@@ -72,10 +111,46 @@ const error = ref(false);
 
 
 //MCQ Sheet Resolver
-const mcq = ref(0);
+const mindex = ref(0);
+const mcq = ref({});
 const answers = ref([]);
+const selection = ref();
+const attempted = ref(0);
+const color = ref({ color: "red" });
 
 const attemptUser = ref(null);
+
+const next = () => {
+    if(mindex.value < total.value - 1) {
+        mindex.value += 1;
+    }
+}
+
+const save = () => {
+    if(selection.value == null) {
+        return;
+    }
+    answers.value[mindex.value] = parseInt(selection.value);
+    attempted.value = 0;
+
+    answers.value.forEach((e)=>{
+        if(e != -1) {
+            attempted.value++;
+        }
+    });
+
+    if (answers.value[mindex.value] == -1) {
+        color.value = { color: "red" };
+    } else {
+        color.value = { color: "green" };
+    }
+};
+
+const previous = () => {
+    if(mindex.value > 0) {
+        mindex.value -= 1;
+    }
+}
 
 onMounted(() => {
     SETCURRENT('/quiz?id=' + route.query.id);
@@ -141,15 +216,20 @@ async function getQuiz() {
         console.log(data)
 
         if (data.status == 200) {
-            data.value = JSON.parse(data.quiz.data)["MCQs"];
+            quizdata.value = JSON.parse(data.quiz.data)["MCQs"];
             name.value = data.quiz.name;
             password.value = data.quiz.password;
             review.value = data.quiz.review;
             duration.value = data.quiz.duration;
             creator.value = data.quiz.creator;
-            total.value = data.value.length;
+            total.value = quizdata.value.length;
             found.value = true;
-            console.log(data.value.length)
+            mindex.value = 0;
+            mcq.value = quizdata.value[mindex.value]
+
+            for(let i in quizdata.value) {
+                answers.value.push(-1);
+            }
         }
         else if(data.status == 400) {
             console.log("Quiz Not Found");
@@ -166,11 +246,32 @@ async function getQuiz() {
     }
 }
 
-
-
 watch(() => route.query.id, (newId) => {
     id.value = String(newId);
 });
+
+watch(mindex, (newIndex) => {
+    mcq.value = quizdata.value[newIndex];
+    if(answers.value[newIndex] != -1) {
+        console.log(''+newIndex);
+        selection.value = answers.value[newIndex].toString();
+    }
+    else {
+        selection.value = null;
+    }
+
+
+    if(answers.value[newIndex] == -1) {
+        color.value = {
+            color: "red"
+        };
+    } else {
+        color.value = {
+            color: "green"
+        };
+    }
+});
+
 </script>
 
 <style scoped>
@@ -248,5 +349,24 @@ watch(() => route.query.id, (newId) => {
     margin-top: 5px;
 }
 
+.radio-group {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start !important;
+    cursor: pointer;
+}
 
+.radio-div {
+    font-size: 18px;
+    margin-left: 10px;
+
+}
+
+.radio {
+    max-width: 50px;
+    height: 50px;
+    width: 20px !important;
+}
 </style>
