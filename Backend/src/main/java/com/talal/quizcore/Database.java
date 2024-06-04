@@ -195,4 +195,25 @@ public class Database {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
+
+    public String deleteSQLStudent(String id) {
+
+        //First Delete From Quiz and Attempt due to Foreign Key Constraint
+        String SQLDeleteQuiz = "DELETE FROM quiz WHERE creator = ?";
+        String SQLDeleteAttempt = "DELETE FROM attempt WHERE studentid = ?";
+        try {
+            db.update(SQLDeleteQuiz, id);
+            db.update(SQLDeleteAttempt, id);
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+
+        String SQLDelete = "DELETE FROM student WHERE id = ?";
+        try {
+            db.update(SQLDelete, id);
+            return "{\"status\": 200, \"message\": \"Student deleted\"}";
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
 }

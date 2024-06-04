@@ -8,3 +8,4 @@ V.6.0 - Initialized the First Phase of the Quiz Page
 V.6.1 - Crafted the Test Section for the Application
 V.7.0 - Added the Register Page to Create a New Student
 V.8.0 - Added the Edit Profile Panel
+V.8.1 - Added the Delete API and Initialized Dashboard

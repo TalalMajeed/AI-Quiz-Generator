@@ -69,10 +69,7 @@
         <br>
         <v-card class="card">
             <div class="heading">Reset & Delete</div>
-            <div class="divider2">
-                <div>Click the Button to Reset your Password!</div>
-                <v-btn class="button">Reset Password</v-btn>
-            </div>
+
             <div class="divider2" style="margin-top:12px;">
                 <div>Click the Button to Delete your Account!</div>
                 <v-btn class="button" @click="deleteAccount">Delete Account</v-btn>
@@ -139,10 +136,10 @@ const submit = async () => {
     if (nameInput.value == "" || educationInput.value == "" || genderInput.value == "") {
         return;
     }
-    console.log("TESTOMG");
-    console.log(image.value);
-    console.log(user["image"])
-    if (enable.value == false && (image.value == user["image"])) return;
+    if (enable.value == false && (image.value == user.value["image"])) {
+        console.log("This is the Same");
+        return;
+    }
     loading.value = true;
     try {
         console.log(image);
@@ -208,6 +205,7 @@ onMounted(() => {
     nameInput.value = user.value["name"];
     educationInput.value = user.value["education"];
     genderInput.value = user.value["community"];
+    descriptionInput.value = user.value["description"];
 
     if(!GETSTUDENT().hasOwnProperty("description")) user.value["description"] = "";
     if(!GETSTUDENT().hasOwnProperty("image")) user.value["image"] = null;
@@ -272,19 +270,23 @@ const sendDelete = async () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${TOKEN}`
+                "Authorization": `Bearer ${GETTOKEN()}`
             },
             body: JSON.stringify({
-                "uid": props.user["id"]
+                "id": user.value["id"]
             })
         });
 
         const data = await response.json();
+        console.log(data)
         if (data["status"] == 200) {
-            setToken("");
-            setUID("");
+            SETTOKEN(null);
+            SETSTUDENT(null);
             deleteLoad.value = false
             router.push("/welcome");
+        }
+        else {
+            throw new Error("Failed to Delete Account");
         }
     }
     catch (e) {

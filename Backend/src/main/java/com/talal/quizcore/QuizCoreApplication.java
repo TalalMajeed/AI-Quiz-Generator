@@ -128,6 +128,18 @@ public class QuizCoreApplication {
         }
     }
 
+    @PostMapping("/delete/user")
+    public String deleteUser(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            return database.deleteSQLStudent(id);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
     @PostConstruct
     public void init() {
         database.initializeDatabase();
