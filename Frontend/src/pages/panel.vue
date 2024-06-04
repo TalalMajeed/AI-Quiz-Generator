@@ -19,7 +19,7 @@ import { ref, watch, defineProps, onMounted } from 'vue';
 import { SETCURRENT, GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
 import router from '../router';
 
-const currentPage = ref(0);
+const currentPage = ref(3);
 const user = ref("");
 const auth = ref(false);
 const openMenu = ref(true);

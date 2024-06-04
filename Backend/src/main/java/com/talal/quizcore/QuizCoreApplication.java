@@ -140,6 +140,46 @@ public class QuizCoreApplication {
         }
     }
 
+    @PostMapping("/generate/quiz")
+    public String generateQuiz(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            int amount = data.getInt("amount");
+            int difficulty = data.getInt("difficulty");
+            String subject = data.getString("subject");
+            String details = data.getString("details");
+            return MCQGenerator.generateMCQs(amount, difficulty, subject, details).toString();
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/save/quiz")
+    public String saveQuiz(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String name = data.getString("name");
+            String password;
+            try {
+                password = data.getString("password");
+            }
+            catch (Exception e) {
+                password = null;
+            }
+
+            String creator = data.getString("creator");
+            Boolean review = data.getBoolean("review");
+            String data2 = data.getString("data");
+            int duration = data.getInt("duration");
+            return database.createSQLQuiz(name, password, creator, review, data2, duration);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+
     @PostConstruct
     public void init() {
         database.initializeDatabase();

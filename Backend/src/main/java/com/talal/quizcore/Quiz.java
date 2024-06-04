@@ -35,8 +35,6 @@ public class Quiz {
 
 public Quiz() {}
 
-    // Getters and setters
-
     public String getCreator() {
         return creator;
     }

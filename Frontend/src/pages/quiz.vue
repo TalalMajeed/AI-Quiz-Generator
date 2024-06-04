@@ -94,7 +94,7 @@ const route = useRoute();
 const auth = ref(true);
 const user = ref("");
 
-const phase = ref(0);
+const phase = ref(1);
 
 const quizdata = ref([]);
 const creator = ref("");
@@ -216,9 +216,12 @@ async function getQuiz() {
         console.log(data)
 
         if (data.status == 200) {
-            quizdata.value = JSON.parse(data.quiz.data)["MCQs"];
+            quizdata.value = JSON.parse(data.quiz.data);
             name.value = data.quiz.name;
             password.value = data.quiz.password;
+            if(password.value == null) {
+                password.value = 0;
+            }
             review.value = data.quiz.review;
             duration.value = data.quiz.duration;
             creator.value = data.quiz.creator;

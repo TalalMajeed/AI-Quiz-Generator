@@ -216,4 +216,51 @@ public class Database {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
+
+    public String createSQLQuiz(String name, String password, String creator, Boolean review, String data, int duration) {
+        String id = Student.generateID();
+
+        //Keep generating the id until it is unique
+        String SQLTest = "SELECT * FROM quiz";
+        try {
+            List<Quiz> quizzes = db.query(SQLTest, new Object[]{}, new RowMapper<>() {
+                @Override
+                public Quiz mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Quiz quiz = new Quiz();
+                    quiz.setId(rs.getString("id"));
+                    quiz.setName(rs.getString("name"));
+                    quiz.setPassword(rs.getString("password"));
+                    quiz.setReview(rs.getInt("review"));
+                    quiz.setCreator(rs.getString("creator"));
+                    quiz.setDuration(rs.getInt("duration"));
+                    return quiz;
+                }
+            });
+
+            for(Quiz quiz : quizzes) {
+                if (quiz.getId().equals(id)) {
+                    id = Student.generateID();
+                }
+            }
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+
+        //Convert data from String to Blob
+        Blob blob = null;
+        try {
+            byte[] dataBytes = data.getBytes();
+            blob = new javax.sql.rowset.serial.SerialBlob(dataBytes);
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+
+        String SQLInsert = "INSERT INTO quiz (id, name, password, creator, data, duration, review) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try {
+            db.update(SQLInsert, id, name, password, creator, blob, duration, review ? 1 : 0);
+            return "{\"status\": 200, \"message\": \"Quiz created\"}";
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
 }

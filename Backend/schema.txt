@@ -30,6 +30,7 @@ studentid CHAR(5),
 quizid CHAR(5),
 page INT,
 data BLOB,
+end DATETIME,
 FOREIGN KEY (studentid) REFERENCES student(id),
 FOREIGN KEY (quizid) REFERENCES quiz(id)
 );
