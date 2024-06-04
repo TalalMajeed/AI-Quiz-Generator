@@ -53,7 +53,7 @@ public class QuizCoreApplication {
             return database.getSQLStudent(email, password);
         }
         catch (Exception e) {
-            return "{status: 500, message: \"Error: " + e + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -66,7 +66,7 @@ public class QuizCoreApplication {
             return database.checkSQLStudent(email, id);
         }
         catch (Exception e) {
-            return "{status: 500, message: \"Error: " + e + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -78,7 +78,7 @@ public class QuizCoreApplication {
             return database.getSQLQuiz(id);
         }
         catch (Exception e) {
-            return "{status: 500, message: \"Error: " + e + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -94,7 +94,37 @@ public class QuizCoreApplication {
             return database.createSQLStudent(name, email, password, education, community);
         }
         catch (Exception e) {
-            return "{status: 500, message: \"Error: " + e + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/update/user")
+    public String updateUser(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            String name = data.getString("name");
+            String education = data.getString("education");
+            String community = data.getString("community");
+            String image;
+            String description;
+            try {
+                image = data.getString("image");
+            }
+            catch (Exception e) {
+                image = null;
+            }
+            try {
+                description = data.getString("description");
+            }
+            catch (Exception e) {
+                description = null;
+            }
+            System.out.println();
+            return database.updateSQLStudent(id, name, education, community, image, description);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 

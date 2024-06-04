@@ -7,7 +7,7 @@
             </div>
             <div class="center">
                 <Dashboard v-show="currentPage == 0" />
-                <Profile v-show="currentPage == 1" />
+                <Profile v-show="currentPage == 1" :page="currentPage" />
                 <Library v-show="currentPage == 2" />
                 <Creator v-show="currentPage == 3" />
             </div>
@@ -19,7 +19,7 @@ import { ref, watch, defineProps, onMounted } from 'vue';
 import { SETCURRENT, GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
 import router from '../router';
 
-const currentPage = ref(0);
+const currentPage = ref(1);
 const user = ref("");
 const auth = ref(false);
 const openMenu = ref(true);

@@ -48,6 +48,21 @@ public class Database {
                     student.setEmail(rs.getString("email"));
                     student.setEducation(rs.getString("education"));
                     student.setCommunity(rs.getString("community"));
+                    student.setDescription(rs.getString("description"));
+
+                    try {
+                        Blob blob = rs.getBlob("photo");
+                        if (blob != null) {
+                            byte[] blobBytes = blob.getBytes(1, (int) blob.length());
+                            String blobText = new String(blobBytes);
+                            student.setImage(blobText);
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Error: " + e);
+                    }
+
+
                     return student;
                 }
             });
@@ -58,7 +73,7 @@ public class Database {
                 return "{\"status\": 400, \"message\": \"Student not found\"}";
             }
         } catch (Exception e) {
-            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -85,7 +100,7 @@ public class Database {
                 return "{\"status\": 400, \"message\": \"Student not found\"}";
             }
         } catch (Exception e) {
-            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -119,7 +134,7 @@ public class Database {
                 return "{\"status\": 400, \"message\": \"Quiz not found\"}";
             }
         } catch (Exception e) {
-            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
@@ -152,7 +167,7 @@ public class Database {
                 }
             }
         } catch (Exception e) {
-            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
 
         // If the email does not exist, create the student
@@ -161,7 +176,23 @@ public class Database {
             db.update(SQLInsert, id, name, email, password, education, community);
             return getSQLStudent(email, password);
         } catch (Exception e) {
-            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    public String updateSQLStudent(String id, String name, String education, String community, String image, String description) {
+        String SQLUpdate = "UPDATE student SET name = ?, education = ?, community = ?, photo = ?, description = ? WHERE id = ?";
+        try {
+            //Convert the image from String to Blob
+            Blob blob = null;
+            if (image != null) {
+                byte[] imageBytes = image.getBytes();
+                blob = new javax.sql.rowset.serial.SerialBlob(imageBytes);
+            }
+            db.update(SQLUpdate, name, education, community, blob, description, id);
+            return "{\"status\": 200, \"message\": \"Student updated\"}";
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 }

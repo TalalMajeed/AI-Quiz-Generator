@@ -41,12 +41,12 @@ function getCookie(cookieName) {
 
 
 export const SETSTUDENT = (user) => {
-    setCookie('student', JSON.stringify(user));
+    localStorage.setItem('student', JSON.stringify(user));
 }
 
 export const GETSTUDENT = () => {
     try {
-        return JSON.parse(getCookie('student'));
+        return JSON.parse(localStorage.getItem('student'));
     }
     catch (e) {
         return null;

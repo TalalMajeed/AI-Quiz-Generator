@@ -94,7 +94,7 @@ const route = useRoute();
 const auth = ref(true);
 const user = ref("");
 
-const phase = ref(1);
+const phase = ref(0);
 
 const quizdata = ref([]);
 const creator = ref("");
