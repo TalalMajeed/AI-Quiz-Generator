@@ -5,3 +5,5 @@ V.3.0 - Added the Student Login API
 V.4.0 - Initialized Panel & Added JWT Auth
 V.5.0 - Initialized the Quiz API & Quiz Frontend Routing
 V.6.0 - Initialized the First Phase of the Quiz Page
+V.6.1 - Crafted the Test Section for the Application
+V.7.0 - Added the Register Page to Create a New Student

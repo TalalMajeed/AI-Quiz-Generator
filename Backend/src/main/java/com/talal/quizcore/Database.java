@@ -122,4 +122,46 @@ public class Database {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
         }
     }
+
+    public String createSQLStudent(String name, String email, String password, String education, String community) {
+        // If the email already exists, return an error
+        String SQLTest = "SELECT * FROM student";
+        String id = Student.generateID();
+        try {
+            List<Student> students = db.query(SQLTest, new Object[]{}, new RowMapper<>() {
+                @Override
+                public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Student student = new Student();
+                    student.setId(rs.getString("id"));
+                    student.setName(rs.getString("name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setEducation(rs.getString("education"));
+                    student.setCommunity(rs.getString("community"));
+                    return student;
+                }
+            });
+
+            for(Student student : students) {
+                if (student.getEmail().equals(email)) {
+                    return "{\"status\": 400, \"message\": \"Email already exists\"}";
+                }
+            }
+            for(Student student : students) {
+                if (student.getId().equals(id)) {
+                    id = Student.generateID();
+                }
+            }
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+        }
+
+        // If the email does not exist, create the student
+        String SQLInsert = "INSERT INTO student (id, name, email, password, education, community) VALUES (?, ?, ?, ?, ?, ?)";
+        try {
+            db.update(SQLInsert, id, name, email, password, education, community);
+            return getSQLStudent(email, password);
+        } catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage() + "\"}";
+        }
+    }
 }

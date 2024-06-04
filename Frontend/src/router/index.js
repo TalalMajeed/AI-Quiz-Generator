@@ -5,6 +5,7 @@ import Welcome from '../pages/welcome.vue'
 import Login from '../pages/login.vue'
 import Panel from '../pages/panel.vue'
 import Quiz from '../pages/quiz.vue'
+import Register from '../pages/register.vue'
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
     path: '/panel',
     name: 'Panel',
     component: Panel
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
   },
   {
     path: '/quiz',

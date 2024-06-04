@@ -82,6 +82,22 @@ public class QuizCoreApplication {
         }
     }
 
+    @PostMapping("/create/user")
+    public String createUser(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String name = data.getString("name");
+            String email = data.getString("email");
+            String password = data.getString("password");
+            String education = data.getString("education");
+            String community = data.getString("community");
+            return database.createSQLStudent(name, email, password, education, community);
+        }
+        catch (Exception e) {
+            return "{status: 500, message: \"Error: " + e + "\"}";
+        }
+    }
+
     @PostConstruct
     public void init() {
         database.initializeDatabase();
