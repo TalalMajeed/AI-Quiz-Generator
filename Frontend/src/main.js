@@ -15,6 +15,11 @@ export const API = 'http://localhost:8080'
 
 export let CURRENT = null;
 
+export let ATTEMPT = null;
+export const SETATTEMPT = (attempt) => {
+    ATTEMPT = attempt;
+}
+
 export const SETCURRENT = (current) => {
     CURRENT = current;
 }

@@ -38,6 +38,21 @@
                     <v-text-field v-text-field v-model="searchInput" label="Search Quiz" variant="outlined"></v-text-field>
                 </v-responsive>
             </v-card>
+            <div class="quiz-line">
+                <v-card class="quiz" v-for="i in filteredData">
+            <div class="quiz-id">Quiz {{i.quiz.id}}</div>
+            <div class="quiz-title">{{trim(i.quiz.name)}}</div>
+
+            <div class="quiz-text"><div>Amount</div><div>{{JSON.parse(i.quiz.data).length}} Questions</div></div>
+            <div class="quiz-author"><div>Time</div><div>{{i.quiz.duration}} Minutes</div></div>
+            <div class="quiz-author"><div>Creator</div><div>{{ i.quiz.creator }}</div></div>
+            <div class="spacer"></div>
+            <div class="button-holder">
+            <v-btn class="quiz-button2" @click="()=>{openQuiz(i.quiz)}">View</v-btn>
+            <v-btn class="quiz-button2" @click="()=>{deleteQuiz(i.quiz.id)}">Delete</v-btn>
+            </div>
+            </v-card>
+            </div>
         </div>
         <div v-if="phase==1">
         <div class="divider2">
@@ -115,13 +130,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, defineProps } from 'vue';
 import { GETTOKEN, API, SETTOKEN, SETSTUDENT, GETSTUDENT } from '@/main';
 import router from '../router';
 
 const user = ref({name: "", email: "", id: "", description: "", image: null});
-
 const loading = ref(false);
+
+const props = defineProps({
+    page: Number
+});
+
+watch(() => props.page, (newVal) => {
+    recieveUserQuizzes();
+});
+
+const trim = str => str.trim().length > 50 ? str.trim().substring(0, 47) + '...' : str.trim();
+
+
 
 const nameInput = ref("");
 const passwordInput = ref("");
@@ -149,6 +175,8 @@ const error = ref("");
 const ailoading = ref(false);
 const saveLoading = ref(false);
 
+const updatingID = ref(null);
+
 const addMCQDialog = () => {
     addDialog.value = true;
     addQuestion.value = "";
@@ -158,6 +186,77 @@ const addMCQDialog = () => {
     addOptionD.value = "";
     addAnswer.value = "A";
     isUpdate.value = -1;
+}
+
+const quizData2 = ref([]);
+const filteredData = ref([]);
+
+function openQuiz(item) {
+    phase.value = 1;
+    nameInput.value = item.name;
+    passwordToggle.value = item.password ? true : false;
+    passwordInput.value = item.password;
+    reviewToggle.value = item.review;
+    timeInput.value = item.duration;
+    quizdata.value = JSON.parse(item.data);
+    updatingID.value = item.id;
+
+}
+
+watch(() => searchInput.value, (newVal) => {
+    if(newVal == "") {
+        filteredData.value = quizData2.value;
+    } else {
+        filteredData.value = quizData2.value.filter((i) => {
+            return i.quiz.name.toLowerCase().includes(newVal.toLowerCase());
+        });
+    }
+});
+
+const deleteQuiz = async (id) => {
+    try {
+        const response = await fetch(API + '/delete/quiz', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GETTOKEN(),
+            },
+            body: JSON.stringify({
+                id: id
+            })
+        });
+
+        const data = await response.json();
+        if(data.status == 200) {
+            console.log("Quiz Deleted");
+            recieveUserQuizzes();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const recieveUserQuizzes = async () => {
+    try {
+        const response = await fetch(API + '/user/quizzes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GETTOKEN(),
+            },
+            body: JSON.stringify({
+                id: GETSTUDENT().id
+            })
+        });
+
+        const data = await response.json();
+        if(data.status == 200) {
+            quizData2.value = data.quizzes;
+            filteredData.value = data.quizzes;
+        }
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 
@@ -247,8 +346,9 @@ const saveQuiz = async() => {
         "creator": GETSTUDENT().id,
         "duration": timeInput.value,
         "password": passwordToggle.value ? passwordInput.value : null,
-        "review": reviewToggle.value,
-        "data": JSON.stringify(quizdata.value)
+        "review": reviewToggle.value ? true : false,
+        "data": JSON.stringify(quizdata.value),
+        "id": updatingID.value
     }
 
     console.log(data);
@@ -277,6 +377,9 @@ const saveQuiz = async() => {
     }
     finally {
         saveLoading.value = false;
+        recieveUserQuizzes();
+        updatingID.value = null;
+        phase.value = 0;
     }
 }
 
@@ -332,11 +435,9 @@ const creatorShift = () => {
     isUpdate.value = -1;
     phase.value = 1;
     quizdata.value = [];
+    updatingID.value = null;
 }
 
-const props = defineProps({
-    page: Number
-});
 </script>
 
 <style scoped>
@@ -499,6 +600,87 @@ const props = defineProps({
 
 .login-error {
     margin: 0 20px 20px 20px;
+}
+
+
+.quiz {
+    width: 350px;
+    height: 400px;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.quiz-line {
+    display: flex;
+    gap: 20px;
+    border-radius: 0px;
+    font-size: 18px;
+    align-items: center;
+    margin: 20px 0;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.quiz-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.quiz-id {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.quiz-text {
+    margin-top: 60px;
+    text-align: left;
+    font-size: 18px;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    padding: 0 5px;
+    justify-content: space-between;
+}
+
+.quiz-author {
+    text-align: left;
+    margin-top: 10px;
+    font-size: 18px;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    padding: 0 5px;
+    justify-content: space-between;
+}
+
+.quiz-button {
+    color: white;
+    background-color: var(--primary);
+    height: 50px;
+    width: 100%;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+.button-holder {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.quiz-button2 {
+    color: white;
+    background-color: var(--primary);
+    height: 50px;
+    width: calc(50% - 10px);
 }
 
 </style>

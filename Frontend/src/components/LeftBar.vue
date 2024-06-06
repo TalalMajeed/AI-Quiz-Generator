@@ -23,7 +23,7 @@ const items = ref([
     { title: 'Creator', icon: 'mdi-pen' },
 ]);
 
-const activeIndex = ref(3);
+const activeIndex = ref(0);
 watch(activeIndex, (newValue, oldValue) => {
     emit("trigger", newValue);
 });

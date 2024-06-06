@@ -4,7 +4,7 @@
         <div v-if="phase == 0">
             <div class="title-nav">
                 <div class="title">Attempt Quiz</div>
-                <v-btn class="button">Dashboard</v-btn>
+                <v-btn class="button" @click="toDashboard">Dashboard</v-btn>
             </div>
 
             <v-card class="card" v-if="found">
@@ -21,15 +21,32 @@
             </v-card>
             <v-card class="card" v-if="found">
                 <div class="card-heading">Start Attempt</div>
-                <v-responsive class="input" v-if="password.length != 0">
+                <v-responsive class="input" v-if="password">
                     <v-text-field v-text-field v-model="passwordInput" label="Quiz Password" type="password" variant="outlined"></v-text-field>
                 </v-responsive>
                 <div class="button-holder">
-                    <v-btn class="button2">Start</v-btn>
-                    <v-btn class="button2">Back</v-btn>
+                    <v-btn class="button2" @click="startAttempt">Start</v-btn>
+                    <v-btn class="button2" @click="toDashboard">Back</v-btn>
                 </div>
                 <v-alert v-show="error" class="login-error" variant="tonal" color="error"
                     text="Incorrect Password!"></v-alert>
+            </v-card>
+            <v-card class="card" v-if="found">
+                <div class="card-heading">USER RESULTS</div>
+                <div>
+                <div class="result-list">
+                    <div class="r-index"><b>#</b></div>
+                    <div class="r-date"><b>Date</b></div>
+                    <div class="r-score"><b>My Score</b></div>
+                    <div class="r-total"><b>Total Score</b></div>
+                </div>
+                <div class="result-list" v-for="(i, index) in resultData">
+                    <div class="r-index">{{ index + 1 }}</div>
+                    <div class="r-date">{{ i.date }}</div>
+                    <div class="r-score">{{ i.score }}</div>
+                    <div class="r-total">{{i.total}}</div>
+                </div>
+                </div>
 
             </v-card>
             <v-card class="card" v-if="!found && !loading">
@@ -43,11 +60,13 @@
                 <div class="card-heading"><b>{{ name }}</b></div>
                 <div class="stat-info"><b>Full Name: </b>{{ attemptUser.name }}</div>
                 <div class="stat-info"><b>Attempted: </b>{{ attempted }} of {{total}}</div>
-                <div class="stat-info"><b>Time Left: </b>0</div>
+                <div class="stat-info"><b>Time Left: </b>{{  currentTime }}</div>
             </v-card>
             <v-card class="card" v-if="found">
                 <div class="card-heading" :style="color"><b>Question {{ mindex + 1 }} of {{total}}</b></div>
-                <div class="stat-info">{{mcq["Q"]}}</div>
+                <div class="stat-info" v-for="t in (mcq.Q || '').replace(/ /g, '&nbsp;').split('\n')">
+                {{ t }}
+            </div>
             </v-card>
             <v-card class="card" v-if="found">
                 <v-radio-group v-model="selection">
@@ -71,15 +90,45 @@
             </v-card>
             <v-card class="card" v-if="found">
                 <div class="button-holder">
+                    <v-btn class="button2" @click="save" :loading="saveLoading">Save</v-btn>
                     <v-btn class="button2" @click="previous">Previous</v-btn>
                     <v-btn class="button2" @click="next">Next</v-btn>
-                    <v-btn class="button2" @click="save">Save</v-btn>
-                    <v-btn class="button2">Submit</v-btn>
+                    <v-btn class="button2" @click="showWarning = true">Submit</v-btn>
                 </div>
             </v-card>
         </div>
         <div v-if="phase == 2">
+            <v-card class="card" v-if="found">
+                <div class="card-heading">Submission Details</div>
+                <div>Your Quiz has been submitted successfully.</div>
+                <div class="stat-info"><b>Quiz Title: </b>{{ name }}</div>
+                <div class="stat-info"><b>Total Time: </b>{{ duration }} Minutes</div>
+            </v-card>
+            <v-card class="card" v-if="found">
+                <div>You can now view your Result in the Dashboard</div>
+                <div class="button-holder">
+                    <v-btn class="button2" @click="()=>{phase = 0, requestResult();}">Result</v-btn>
+                    <v-btn class="button2" @click="toDashboard">Dashboard</v-btn>
+                </div>
+            </v-card>
         </div>
+        <v-dialog v-model="showWarning" max-width="400" persistent>
+            <v-card prepend-icon="mdi-update" text="Your Answers will be Submitted and you will not be able to change them. Are you sure you want to submit?"
+                title="Submit Quiz?">
+                <template v-slot:actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn @click="showWarning = false">
+                        Go Back
+                    </v-btn>
+
+                    <v-btn :loading="submitLoad" @click="sendComplete">
+                        Save
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
+
     </div>
 
 </template>
@@ -88,13 +137,13 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import router from '../router';
-import { SETCURRENT,GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
+import { SETCURRENT,GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN, ATTEMPT, SETATTEMPT } from '../main';
 
 const route = useRoute();
 const auth = ref(true);
 const user = ref("");
 
-const phase = ref(1);
+const phase = ref(0);
 
 const quizdata = ref([]);
 const creator = ref("");
@@ -108,9 +157,14 @@ const loading = ref(false);
 const passwordInput = ref("");
 const id = ref(String(route.query.id).toUpperCase());
 const error = ref(false);
+const startTime = ref(0);
+const saveLoading = ref(false);
+
+const submitLoad = ref(false);
+const showWarning = ref(false);
 
 
-//MCQ Sheet Resolver
+
 const mindex = ref(0);
 const mcq = ref({});
 const answers = ref([]);
@@ -119,18 +173,172 @@ const attempted = ref(0);
 const color = ref({ color: "red" });
 
 const attemptUser = ref(null);
+const currentTime = ref(0);
+const attemptid = ref(null);
 
+const resultData = ref([]);
+
+const requestResult = async() => {
+    try {
+        const req = await fetch(API + '/get/user/attempt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GETTOKEN(),
+            },
+            body: JSON.stringify({
+                studentid: GETSTUDENT().id,
+                quizid: id.value
+            })
+        });
+
+        const res = await req.json();
+        console.log(res);
+        let data =  [];
+        if(res.status == 200) {
+            for(let i in res.attempts) {
+                let sum = 0;
+                for(let j in JSON.parse(res.attempts[i].attempt.data)) {
+                    for(let k in quizdata.value) {
+                        if(quizdata.value[k].A == JSON.parse(res.attempts[i].attempt.data)[j] && k == j) {
+                            sum += 1;
+                        }
+                    }
+                }
+
+                data.push({
+                    date: new Date(res.attempts[i].attempt.end).toLocaleString(),
+                    score: sum,
+                    total: quizdata.value.length
+                });
+            }
+
+            resultData.value = data;
+        }
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+const toDashboard = () => {
+    router.push('/panel');
+}
 const next = () => {
     if(mindex.value < total.value - 1) {
         mindex.value += 1;
     }
 }
 
-const save = () => {
+const sendComplete = async() => {
+    submitLoad.value = true;
+    try {
+        const req = await fetch(API + '/set/completed', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GETTOKEN(),
+            },
+            body: JSON.stringify({
+                id: attemptid.value,
+            })
+        });
+
+        const res = await req.json();
+        console.log(res);
+        if(res.status == 200) {
+            showWarning.value = false;
+            phase.value = 2;
+        }
+    }
+    catch(e) {
+        console.log(e);
+    }
+    finally {
+        submitLoad.value = false;
+    }
+}
+
+const startAttempt = async() => {
+    let x = new Date().getTime();
+    if(password.value == passwordInput.value || password.value == null) {
+        try {
+            const req = await fetch(API + '/create/attempt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GETTOKEN(),
+            },
+            body: JSON.stringify({
+                quizid: id.value,
+                studentid: GETSTUDENT().id,
+                page: 0,
+                data: JSON.stringify(answers.value),
+                end: x
+            })
+        });
+
+        const res = await req.json();
+        console.log(res);
+        if(res.status == 200) {
+            phase.value = 1;
+            startTime.value = x;
+            attemptid.value = res.attempt.id;
+            shiftTime();
+        }
+        }
+        catch(e) {
+            console.log(e);
+        }
+    }
+    else {
+        error.value = true;
+    }
+}
+
+const updateAttempt = async() => {
+
+    saveLoading.value = true;
+
+    try{
+        const req = await fetch(API + '/update/attempt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + GETTOKEN(),
+        },
+        body: JSON.stringify({
+            id: attemptid.value,
+            page: mindex.value,
+            data: JSON.stringify(answers.value),
+        })
+    });
+
+    const res = await req.json();
+    console.log(res);
+    if(res.status == 200) {
+        console.log("Attempt Updated");
+        answers.value = JSON.parse(res.attempt.data);
+    }
+    }
+    catch(e) {
+        console.log(e);
+    }
+    finally {
+        saveLoading.value = false;
+    }
+
+}
+
+const save = async() => {
     if(selection.value == null) {
         return;
     }
+
+    console.log("Saving");
+
     answers.value[mindex.value] = parseInt(selection.value);
+    await updateAttempt();
     attempted.value = 0;
 
     answers.value.forEach((e)=>{
@@ -152,14 +360,60 @@ const previous = () => {
     }
 }
 
+const shiftTime = () => {
+    let x = new Date().getTime();
+    let diff = x - startTime.value;
+    let time = duration.value * 60 * 1000 - diff;
+    let minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((time % (1000 * 60)) / 1000);
+
+    if(minutes < 0 || seconds < 0) {
+        minutes = 0;
+        seconds = 0;
+    }
+    currentTime.value = minutes + "m " + seconds + "s";
+
+    if(minutes < 0 && seconds < 0 && phase.value == 1) {
+        sendComplete();
+    }
+
+    setTimeout(shiftTime, 1000);
+}
+
 onMounted(() => {
     SETCURRENT('/quiz?id=' + route.query.id);
     if(!GETSTUDENT()) router.push('/login');
     if(!GETTOKEN()) router.push('/login');
     authenticate();
     setInterval(authenticate, 60 * 20 * 1000);
-
     attemptUser.value = GETSTUDENT();
+
+    if(ATTEMPT != null) {
+    console.log("SUKA THIS IS ATTEMPT")
+    console.log(ATTEMPT);
+    attemptid.value = ATTEMPT.id;
+    answers.value = JSON.parse(ATTEMPT.data);
+    mindex.value = ATTEMPT.page;
+    phase.value = 1;
+    startTime.value = ATTEMPT.end;
+    attempted.value = 0;
+    answers.value.forEach((e)=>{
+        if(e != -1) {
+            attempted.value++;
+        }
+    });
+    shiftTime();
+    if(answers.value[mindex.value] == -1) {
+        color.value = {
+            color: "red"
+        };
+    } else {
+        color.value = {
+            color: "green"
+        };
+    }
+    
+    }
 });
 
 async function authenticate() {
@@ -182,6 +436,11 @@ async function authenticate() {
         if (data.status == 200) {
             SETTOKEN(data.token);
             user.value = GETSTUDENT().name;
+            console.log("ATTEMPT:q23e");
+            console.log(ATTEMPT);
+            if(data.hasOwnProperty('attempt') && Object.keys(data.attempt).length !== 0 && ATTEMPT == null) {
+                router.push('/panel');
+            }
             console.log("Authentication Successful")
             auth.value = true;
             getQuiz();
@@ -194,6 +453,7 @@ async function authenticate() {
         console.log(e);
         SETSTUDENT(null);
         SETTOKEN(null);
+        SETATTEMPT(null);
         router.push('/login');
     }
 }
@@ -219,9 +479,6 @@ async function getQuiz() {
             quizdata.value = JSON.parse(data.quiz.data);
             name.value = data.quiz.name;
             password.value = data.quiz.password;
-            if(password.value == null) {
-                password.value = 0;
-            }
             review.value = data.quiz.review;
             duration.value = data.quiz.duration;
             creator.value = data.quiz.creator;
@@ -233,6 +490,7 @@ async function getQuiz() {
             for(let i in quizdata.value) {
                 answers.value.push(-1);
             }
+            requestResult();
         }
         else if(data.status == 400) {
             console.log("Quiz Not Found");
@@ -371,5 +629,33 @@ watch(mindex, (newIndex) => {
     max-width: 50px;
     height: 50px;
     width: 20px !important;
+}
+
+.result-list {
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+    background-color: rgb(236, 236, 236);
+    text-align: center;
+}
+
+.r-index {
+    width: 40px;
+}
+
+.r-date {
+    width: 350px;
+}
+
+.r-score {
+    width: 150px;
+}
+
+.r-total {
+    width: 150px;
+}
+
+.result-list:nth-child(odd) {
+    background-color: #e5dbfd;
 }
 </style>

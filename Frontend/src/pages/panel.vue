@@ -8,18 +8,18 @@
             <div class="center">
                 <Dashboard v-show="currentPage == 0" :page="currentPage" />
                 <Profile v-show="currentPage == 1" :page="currentPage" />
-                <Library v-show="currentPage == 2" />
-                <Creator v-show="currentPage == 3" />
+                <Library v-show="currentPage == 2" :page="currentPage" />
+                <Creator v-show="currentPage == 3" :page="currentPage" />
             </div>
         </div>
     </div>
 </template>
 <script setup>
 import { ref, watch, defineProps, onMounted } from 'vue';
-import { SETCURRENT, GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN } from '../main';
+import { SETCURRENT, GETSTUDENT, SETSTUDENT, API, SETTOKEN, GETTOKEN, ATTEMPT, SETATTEMPT } from '../main';
 import router from '../router';
 
-const currentPage = ref(3);
+const currentPage = ref(0);
 const user = ref("");
 const auth = ref(false);
 const openMenu = ref(true);
@@ -53,6 +53,17 @@ async function authenticate() {
         if (data.status == 200) {
             SETTOKEN(data.token);
             user.value = GETSTUDENT().name;
+
+            console.log(data);
+
+            if(data.hasOwnProperty('attempt') && Object.keys(data.attempt).length !== 0) {
+                console.log(data.attempt);
+                let temp = JSON.parse(data.attempt);
+                temp = temp.attempt;
+                SETATTEMPT(temp);
+                router.push('/quiz?id=' + temp.quizId);
+            }
+            console.log(data);
             console.log("Authentication Successful")
             auth.value = true;
         } else {
@@ -64,6 +75,7 @@ async function authenticate() {
         console.log(e);
         SETSTUDENT(null);
         SETTOKEN(null);
+        SETATTEMPT(null);
         router.push('/login');
     }
 }

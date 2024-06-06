@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GenerationType;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -161,6 +162,7 @@ public class QuizCoreApplication {
             JSONObject data = new JSONObject(raw);
             String name = data.getString("name");
             String password;
+            String id;
             try {
                 password = data.getString("password");
             }
@@ -168,17 +170,142 @@ public class QuizCoreApplication {
                 password = null;
             }
 
+            try {
+                id = data.getString("id");
+            }
+            catch (Exception e) {
+                id = null;
+            }
+
             String creator = data.getString("creator");
             Boolean review = data.getBoolean("review");
             String data2 = data.getString("data");
             int duration = data.getInt("duration");
-            return database.createSQLQuiz(name, password, creator, review, data2, duration);
+            return database.createSQLQuiz(name, password, creator, review, data2, duration,id);
         }
         catch (Exception e) {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }
     }
 
+    @PostMapping("/create/attempt")
+    public String createAttempt(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String studentid = data.getString("studentid");
+            String quizid = data.getString("quizid");
+            int page = data.getInt("page");
+            String data2 = data.getString("data");
+            long end = data.getLong("end");
+            return database.createSQLAttempt(studentid, quizid, page, data2, end);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/update/attempt")
+    public String updateAttempt(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String data2;
+            String id = data.getString("id");
+            int page;
+
+            try {
+                data2 = data.getString("data");
+                page = data.getInt("page");
+            }
+            catch (Exception e) {
+                data2 = null;
+                page = 0;
+            }
+
+            if(data2 == null) {
+                return database.getSQLAttempt(id);
+            }
+            else {
+                return database.updateSQLAttempt(id, data2, page);
+            }
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/set/completed")
+    public String setCompleted(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            return database.setSQLCompleted(id);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/get/quizzes")
+    public String getQuizzes(@RequestBody String raw) {
+        System.out.println("REQUEST RECIEVED");
+        try {
+            JSONObject data = new JSONObject(raw);
+            return database.getSQLQuizzes();
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/user/quizzes")
+    public String getUserQuizzes(@RequestBody String raw) {
+        System.out.println("REQUEST RECIEVED");
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            return database.getUserSQLQuizzes(id);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/delete/quiz")
+    public String deleteQuiz(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String id = data.getString("id");
+            return database.deleteSQLQuiz(id);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/get/user/attempt")
+    public String getUserAttempt(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String studentid = data.getString("studentid");
+            String quizid = data.getString("quizid");
+            return database.getSQLAttempt(studentid, quizid);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
+
+    @PostMapping("/get/user/analytics")
+    public String getUserAnalytics(@RequestBody String raw) {
+        try {
+            JSONObject data = new JSONObject(raw);
+            String studentid = data.getString("studentid");
+            return database.getSQLAnalytics(studentid);
+        }
+        catch (Exception e) {
+            return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
+        }
+    }
 
     @PostConstruct
     public void init() {
