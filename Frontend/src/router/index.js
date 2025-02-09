@@ -1,53 +1,53 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from "vue-router";
 
-import Index from '../pages/index.vue'
-import Welcome from '../pages/welcome.vue'
-import Login from '../pages/login.vue'
-import Panel from '../pages/panel.vue'
-import Quiz from '../pages/quiz.vue'
-import Register from '../pages/register.vue'
+import Index from "../pages/index.vue";
+import Welcome from "../pages/welcome.vue";
+import Login from "../pages/login.vue";
+import Panel from "../pages/panel.vue";
+import Quiz from "../pages/quiz.vue";
+import Register from "../pages/register.vue";
 
 const routes = [
   {
-    path: '/',
-    name: 'Index',
-    component: Index
+    path: "/",
+    name: "Index",
+    component: Index,
   },
   {
-    path: '/welcome',
-    name: 'Welcome',
-    component: Welcome
+    path: "/welcome",
+    name: "Welcome",
+    component: Welcome,
   },
   {
-    path: '/login',
-    name: 'Login',
-    component: Login
+    path: "/login",
+    name: "Login",
+    component: Login,
   },
   {
-    path: '/panel',
-    name: 'Panel',
-    component: Panel
+    path: "/panel",
+    name: "Panel",
+    component: Panel,
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: Register
+    path: "/register",
+    name: "Register",
+    component: Register,
   },
   {
-    path: '/quiz',
-    name: 'Quiz',
+    path: "/quiz",
+    name: "Quiz",
     component: Quiz,
-    props: true
+    props: true,
   },
   {
-    path: '/:pathMatch(.*)*',
-    redirect: '/welcome'
-  }
-]
+    path: "/:pathMatch(.*)*",
+    redirect: "/welcome",
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
+});
 
 export default router;

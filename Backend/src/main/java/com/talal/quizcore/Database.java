@@ -251,13 +251,12 @@ public class Database {
     }
 
     public String deleteSQLStudent(String id) {
-
-        //First Delete From Quiz and Attempt due to Foreign Key Constraint
-        String SQLDeleteQuiz = "DELETE FROM quiz WHERE creator = ?";
         String SQLDeleteAttempt = "DELETE FROM attempt WHERE studentid = ?";
+        String SQLDeleteQuiz = "DELETE FROM quiz WHERE creator = ?";
+
         try {
-            db.update(SQLDeleteQuiz, id);
             db.update(SQLDeleteAttempt, id);
+            db.update(SQLDeleteQuiz, id);
         } catch (Exception e) {
             return "{\"status\": 500, \"message\": \"Error: " + e.getMessage().replaceAll("\"", "\\\\\"") + "\"}";
         }

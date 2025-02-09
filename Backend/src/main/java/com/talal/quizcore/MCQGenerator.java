@@ -7,10 +7,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 
 public class MCQGenerator {
+    @Value("${openai.api.key}")
+    private static String openAiApiKey;
+
     private static JSONArray MCQs = new JSONArray();
 
     public static JSONObject generateMCQs(int amount, int difficulty, String subject, String details) {
@@ -28,6 +32,7 @@ public class MCQGenerator {
 
     private static String getSystemPrompt() {
         return """
+            format
             You are a Question Bank Generator. Your job is to generate multiple-choice questions (MCQs) based on the user's specifications. Each question should have 4 options, and one correct answer.
             Your responses should be in JSON format.
             Example relevant prompts include: 
@@ -40,7 +45,7 @@ public class MCQGenerator {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost post = new HttpPost("https://api.openai.com/v1/chat/completions");
             post.setHeader("Content-type", "application/json");
-            post.setHeader("Authorization", "Bearer " + System.getenv("OPENAI_API_KEY"));
+            post.setHeader("Authorization", "Bearer " + openAiApiKey);
 
             JSONObject body = new JSONObject();
             body.put("model", "gpt-3.5-turbo");

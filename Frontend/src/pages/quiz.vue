@@ -389,8 +389,6 @@ onMounted(() => {
     attemptUser.value = GETSTUDENT();
 
     if(ATTEMPT != null) {
-    console.log("SUKA THIS IS ATTEMPT")
-    console.log(ATTEMPT);
     attemptid.value = ATTEMPT.id;
     answers.value = JSON.parse(ATTEMPT.data);
     mindex.value = ATTEMPT.page;

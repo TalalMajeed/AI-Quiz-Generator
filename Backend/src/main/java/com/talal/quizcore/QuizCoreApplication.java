@@ -14,6 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
@@ -22,8 +28,12 @@ import jakarta.persistence.Table;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.context.annotation.Configuration;
 
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -32,7 +42,6 @@ import java.util.List;
 @ComponentScan
 public class QuizCoreApplication {
 
-
     @Autowired
     private com.talal.quizcore.Database database;
 
@@ -40,7 +49,22 @@ public class QuizCoreApplication {
         SpringApplication.run(QuizCoreApplication.class, args);
     }
 
-    @GetMapping("/")
+    private ResponseEntity<byte[]> serveIndexHtml() {
+        try {
+            Resource resource = new ClassPathResource("static/index.html");
+            byte[] content = Files.readAllBytes(Paths.get(resource.getURI()));
+            return ResponseEntity.ok().body(content);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(value = {"/", "/welcome", "/login", "/panel", "/register", "/quiz"})
+    public ResponseEntity<byte[]> serveVueApp() {
+        return serveIndexHtml();
+    }
+
+    @GetMapping("/api")
     public String hello() {
         return "<h1>Welcome to QuizCore API</h1><p>Powered by SpringBoot Java!</p><p>© Muhammad Talal Majeed</p>";
     }
@@ -310,5 +334,16 @@ public class QuizCoreApplication {
     @PostConstruct
     public void init() {
         database.initializeDatabase();
+    }
+}
+
+@Configuration
+class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve /assets/ from src/main/resources/static/assets/
+        registry.addResourceHandler("/assets/**")
+                .addResourceLocations("classpath:/static/assets/")
+                .setCachePeriod(3600); // Cache for better performance
     }
 }
