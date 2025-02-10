@@ -337,13 +337,3 @@ public class QuizCoreApplication {
     }
 }
 
-@Configuration
-class WebConfig implements WebMvcConfigurer {
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve /assets/ from src/main/resources/static/assets/
-        registry.addResourceHandler("/assets/**")
-                .addResourceLocations("classpath:/static/assets/")
-                .setCachePeriod(3600); // Cache for better performance
-    }
-}
