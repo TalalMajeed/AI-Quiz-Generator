@@ -26,11 +26,13 @@ FOREIGN KEY (creator) REFERENCES student(id)
 );
 
 CREATE TABLE attempt(
+id CHAR(5) PRIMARY KEY,
 studentid CHAR(5),
 quizid CHAR(5),
 page INT,
 data BLOB,
 end DATETIME,
+completed INT,
 FOREIGN KEY (studentid) REFERENCES student(id),
 FOREIGN KEY (quizid) REFERENCES quiz(id)
 );

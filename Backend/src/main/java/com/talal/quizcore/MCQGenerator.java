@@ -1,5 +1,6 @@
 package com.talal.quizcore;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.http.client.methods.HttpPost;
@@ -7,16 +8,17 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import jakarta.annotation.PostConstruct;
 
 import java.io.IOException;
 
 public class MCQGenerator {
     private static JSONArray MCQs = new JSONArray();
 
-    public static JSONObject generateMCQs(int amount, int difficulty, String subject, String details) {
+    public static JSONObject generateMCQs(String key, int amount, int difficulty, String subject, String details) {
         String userPrompt = getUserPrompt(amount, difficulty, subject, details);
         String systemPrompt = getSystemPrompt();
-        return getGPTResponse(systemPrompt, userPrompt);
+        return getGPTResponse(key, systemPrompt, userPrompt);
     }
 
     private static String getUserPrompt(int amount, int difficulty, String subject, String details) {
@@ -28,6 +30,7 @@ public class MCQGenerator {
 
     private static String getSystemPrompt() {
         return """
+            format
             You are a Question Bank Generator. Your job is to generate multiple-choice questions (MCQs) based on the user's specifications. Each question should have 4 options, and one correct answer.
             Your responses should be in JSON format.
             Example relevant prompts include: 
@@ -36,11 +39,11 @@ public class MCQGenerator {
             """;
     }
 
-    private static JSONObject getGPTResponse(String systemPrompt, String userInput) {
+    private static JSONObject getGPTResponse(String key, String systemPrompt, String userInput) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost post = new HttpPost("https://api.openai.com/v1/chat/completions");
             post.setHeader("Content-type", "application/json");
-            post.setHeader("Authorization", "Bearer " + System.getenv("OPENAI_API_KEY"));
+            post.setHeader("Authorization", "Bearer " + key);
 
             JSONObject body = new JSONObject();
             body.put("model", "gpt-3.5-turbo");
